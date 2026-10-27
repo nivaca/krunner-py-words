@@ -16,6 +16,7 @@ single match that opens the settings.  Needs python3-dbus and python3-gobject.
 """
 
 import argparse
+import html
 import os
 import shutil
 import subprocess
@@ -69,6 +70,20 @@ def asks_settings(text: str) -> bool:
     """Whether TEXT (the query without the prefix) asks for the
     settings."""
     return text.strip().lower() in ASK_SETTINGS
+
+
+def display(m: dictionary.Match) -> str:
+    """What KRunner shows of M: the dictionary form in bold, then the
+    meaning and the forms.  (KRunner shows the subtext only for the
+    selected match, on one line beside the text: the long dictionary forms
+    leave it no room.  A multiline text is styled text, so it is escaped.)"""
+    lines = [f'<b>{html.escape(m.text)}</b>']
+    meaning, _, forms = m.subtext.partition('\n')
+    if meaning:
+        lines.append(html.escape(meaning))
+    if forms:
+        lines.append(f'<i>{html.escape(forms)}</i>')
+    return '<br>'.join(lines)
 
 
 def copy_text(text: str) -> None:
@@ -134,9 +149,8 @@ class Runner(dbus.service.Object):
             key = str(i)
             self.found[key] = m
             properties = dbus.Dictionary(
-                {'subtext': m.subtext, 'multiline': True,
-                 'category': 'py-words'}, signature='sv')
-            out.append((key, m.text, ICON, EXACT, 1.0 - i / 100,
+                {'multiline': True, 'category': 'py-words'}, signature='sv')
+            out.append((key, display(m), ICON, EXACT, 1.0 - i / 100,
                         properties))
         return out
 
