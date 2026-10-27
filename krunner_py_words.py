@@ -9,9 +9,9 @@ program the first time it is needed; it stays, with the dictionary loaded.
 
     python3 krunner_py_words.py [--py-words FOLDER]
 
-Enter copies the results of the match; the other actions open the search
-in the dictionary online, and the settings of the runner
-(settings_dialog.py).  "la ?" (or "la settings", "la ajustes") gives a
+Enter opens the search in the window of py-words (words_gui.py); the
+actions copy the results of the match, open the search in the dictionary
+online, and open the settings of the runner (settings_dialog.py).  "la ?" (or "la settings", "la ajustes") gives a
 single match that opens the settings.  Needs python3-dbus and python3-gobject.
 """
 
@@ -53,8 +53,8 @@ def strip_prefix(query: str, prefix: str = PREFIX) -> str | None:
 
 
 #  The names of the actions, in the language of the interface
-ACTIONS = {'en': ('Open online', 'Settings'),
-           'es': ('Abrir en línea', 'Ajustes')}
+ACTIONS = {'en': ('Copy', 'Open online', 'Settings'),
+           'es': ('Copiar', 'Abrir en línea', 'Ajustes')}
 #  What asks for the settings, after the prefix: la ?
 ASK_SETTINGS = ('?', 'settings', 'ajustes')
 #  The match that opens them: its title and subtext
@@ -94,13 +94,15 @@ class Runner(dbus.service.Object):
         self.words = words
         self.py_words = py_words
         self.found: dict[str, dictionary.Match] = {}   # (of the last query)
+        self.query = ''                                 # (the last query)
 
     @dbus.service.method(IFACE, out_signature='a(sss)')
     def Actions(self):
         import interface
         self.words.refresh()
-        online, settings = ACTIONS.get(interface.code(), ACTIONS['en'])
-        return [('online', online, 'internet-web-browser'),
+        copy, online, settings = ACTIONS.get(interface.code(), ACTIONS['en'])
+        return [('copy', copy, 'edit-copy'),
+                ('online', online, 'internet-web-browser'),
                 ('settings', settings, 'configure')]
 
     @dbus.service.method(IFACE, in_signature='s',
@@ -126,6 +128,7 @@ class Runner(dbus.service.Object):
             print(f'krunner-py-words: {text!r}: {e!r}', file=sys.stderr)
             return []
         self.found = {}
+        self.query = text
         out = []
         for i, m in enumerate(matches):
             key = str(i)
@@ -147,8 +150,22 @@ class Runner(dbus.service.Object):
             return
         if action == 'online':
             webbrowser.open(m.url)
-        else:
+        elif action == 'copy':
             copy_text(m.full)
+        else:
+            self.open_window(self.query)
+
+    def open_window(self, query: str):
+        """The window of py-words, looking QUERY up (after ~e: to
+        Latin)."""
+        query = query.strip()
+        args = []
+        if query[:2].lower() == '~e':
+            args, query = ['-e'], query[2:].strip()
+        subprocess.Popen([sys.executable,
+                          os.path.join(self.py_words, 'words_gui.py')] +
+                         args + query.split(),
+                         cwd=self.py_words)
 
     def open_settings(self):
         subprocess.Popen([sys.executable,

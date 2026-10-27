@@ -10,9 +10,9 @@ appear as you type.
     la ~e friend        that language to Latin (also la ~e love V)
 
 Each match is an entry: its dictionary form as the title, and below it the
-meaning and the forms (`amīc-ōrum GEN.PL`).  Enter copies the results of
-that entry; the other actions open the search in the dictionary online,
-and the settings of the runner.  The results follow the settings of
+meaning and the forms (`amīc-ōrum GEN.PL`).  Enter opens the search in
+the window of py-words; the actions copy the results of that entry, open
+the search in the dictionary online, and open the settings of the runner.  The results follow the settings of
 py-words (the glosses, the near spellings ...), as the window and the
 command line do, and a change of settings is seen at the next query.
 
