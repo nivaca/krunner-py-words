@@ -9,8 +9,10 @@ program the first time it is needed; it stays, with the dictionary loaded.
 
     python3 krunner_py_words.py [--py-words FOLDER]
 
-Enter copies the results of the match; the second action opens the search
-in the dictionary online.  Needs python3-dbus and python3-gobject.
+Enter copies the results of the match; the other actions open the search
+in the dictionary online, and the settings of the runner
+(settings_dialog.py).  "la ?" (or "la settings", "la ajustes") gives a
+single match that opens the settings.  Needs python3-dbus and python3-gobject.
 """
 
 import argparse
@@ -26,26 +28,47 @@ from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository import GLib
 
 import dictionary
+import runner_settings
 
 SERVICE = 'io.github.nivaca.PyWordsKRunner'
 PATH = '/runner'
 IFACE = 'org.kde.krunner1'
-#  What starts a query: "la amicorum"
-PREFIX = 'la '
+#  What starts a query, as usual (the settings can change it): la amicorum
+PREFIX = runner_settings.PREFIX
 ICON = 'accessories-dictionary'
 #  KRunner's types of match (KRunner::QueryMatch::CategoryRelevance)
 EXACT = 100
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-#  py-words, if --py-words does not say: next to this folder
-PY_WORDS = os.path.join(os.path.dirname(HERE), 'py-words')
+PY_WORDS = dictionary.PY_WORDS
 
 
-def strip_prefix(query: str) -> str | None:
-    """The query without PREFIX, or None if it is not for us."""
-    if query.lower().startswith(PREFIX):
-        return query[len(PREFIX):]
+def strip_prefix(query: str, prefix: str = PREFIX) -> str | None:
+    """The query without PREFIX and a space, or None if it is not for
+    us."""
+    start = prefix.lower() + ' '
+    if query.lower().startswith(start):
+        return query[len(start):]
     return None
+
+
+#  The names of the actions, in the language of the interface
+ACTIONS = {'en': ('Open online', 'Settings'),
+           'es': ('Abrir en línea', 'Ajustes')}
+#  What asks for the settings, after the prefix: la ?
+ASK_SETTINGS = ('?', 'settings', 'ajustes')
+#  The match that opens them: its title and subtext
+SETTINGS_MATCH = {
+    'en': ('py-words settings',
+           'The prefix, the languages and the number of results'),
+    'es': ('Ajustes de py-words',
+           'El prefijo, los idiomas y el número de resultados')}
+
+
+def asks_settings(text: str) -> bool:
+    """Whether TEXT (the query without the prefix) asks for the
+    settings."""
+    return text.strip().lower() in ASK_SETTINGS
 
 
 def copy_text(text: str) -> None:
@@ -66,21 +89,37 @@ def copy_text(text: str) -> None:
 
 class Runner(dbus.service.Object):
 
-    def __init__(self, bus, words: dictionary.Dictionary):
+    def __init__(self, bus, words: dictionary.Dictionary, py_words: str):
         super().__init__(bus, PATH)
         self.words = words
+        self.py_words = py_words
         self.found: dict[str, dictionary.Match] = {}   # (of the last query)
 
     @dbus.service.method(IFACE, out_signature='a(sss)')
     def Actions(self):
-        return [('online', 'Open online', 'internet-web-browser')]
+        import interface
+        self.words.refresh()
+        online, settings = ACTIONS.get(interface.code(), ACTIONS['en'])
+        return [('online', online, 'internet-web-browser'),
+                ('settings', settings, 'configure')]
 
     @dbus.service.method(IFACE, in_signature='s',
                          out_signature='a(sssida{sv})')
     def Match(self, query):
-        text = strip_prefix(str(query))
+        self.words.refresh()
+        text = strip_prefix(str(query), self.words.mine.prefix)
         if text is None or not text.strip():
             return []
+        if asks_settings(text):
+            import interface
+            title, subtext = SETTINGS_MATCH.get(interface.code(),
+                                                SETTINGS_MATCH['en'])
+            self.found = {}
+            return [('settings', title, 'configure', EXACT, 1.0,
+                     dbus.Dictionary(
+                         {'subtext': subtext, 'category': 'py-words',
+                          'actions': dbus.Array([], signature='s')},
+                         signature='sv'))]
         try:
             matches = self.words.matches(text)
         except Exception as e:          # (KRunner shows nothing, else)
@@ -100,6 +139,9 @@ class Runner(dbus.service.Object):
 
     @dbus.service.method(IFACE, in_signature='ss')
     def Run(self, key, action):
+        if str(key) == 'settings' or action == 'settings':
+            self.open_settings()
+            return
         m = self.found.get(str(key))
         if m is None:
             return
@@ -107,6 +149,11 @@ class Runner(dbus.service.Object):
             webbrowser.open(m.url)
         else:
             copy_text(m.full)
+
+    def open_settings(self):
+        subprocess.Popen([sys.executable,
+                          os.path.join(HERE, 'settings_dialog.py'),
+                          '--py-words', self.py_words])
 
 
 def main(argv=None):
@@ -120,7 +167,7 @@ def main(argv=None):
     DBusGMainLoop(set_as_default=True)
     bus = dbus.SessionBus()
     name = dbus.service.BusName(SERVICE, bus)  # noqa: F841 (kept)
-    runner = Runner(bus, words)         # noqa: F841
+    runner = Runner(bus, words, args.py_words)  # noqa: F841
     GLib.MainLoop().run()
 
 

@@ -48,7 +48,7 @@ class MatchTests(unittest.TestCase):
 
     def test_at_most(self):
         self.assertLessEqual(len(self.words.matches('~e amigo')),
-                             dictionary.MOST)
+                             self.words.most)
         self.assertEqual(self.words.matches('~e'), [])
 
 
@@ -63,6 +63,11 @@ class PrefixTests(unittest.TestCase):
         self.assertEqual(k.strip_prefix('La amicorum'), 'amicorum')
         self.assertIsNone(k.strip_prefix('firefox'))
         self.assertIsNone(k.strip_prefix('lamp'))
+        self.assertEqual(k.strip_prefix('lat amo', 'lat'), 'amo')
+        for text in ('?', ' settings', 'Ajustes '):
+            self.assertTrue(k.asks_settings(text))
+        self.assertFalse(k.asks_settings('amo'))
+        self.assertIsNone(k.strip_prefix('la amo', 'lat'))
 
 
 if __name__ == '__main__':

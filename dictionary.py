@@ -16,10 +16,13 @@ import sys
 import urllib.parse
 from dataclasses import dataclass
 
+import runner_settings
+
+#  py-words, if no other folder is given: next to this one
+PY_WORDS = os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), 'py-words')
 #  The dictionary online, for the action "Open online"
 ONLINE = 'https://nicolasvaughan.org/py-words/'
-#  At most so many matches for a query
-MOST = 12
 
 
 @dataclass
@@ -55,23 +58,36 @@ class Dictionary:
         self.lexicon = Lexicon.load(self.datadir)
         self._stamp = None
         self.session = None
-        self._settings_changed()
+        self.mine = runner_settings.RunnerSettings()
+        self.most = runner_settings.RESULTS
+        self.refresh()
 
-    def _settings_changed(self):
-        """Reads the settings again if the configuration file changed
-        (in the window, say)."""
+    def languages(self) -> dict[str, str]:
+        """{code: name} of the languages of the meanings."""
+        import languages
+        return languages.names(self.datadir)
+
+    def refresh(self):
+        """Reads the settings again if the configuration file of py-words
+        (changed in the window, say) or that of the runner changed."""
         from session import Session
         from settings import Settings
         try:
             stamp = os.path.getmtime(self._config.config_path())
         except OSError:
             stamp = None
+        stamp = (stamp, runner_settings.stamp())
         if self.session is not None and stamp == self._stamp:
             return
         self._stamp = stamp
         settings = Settings()
         settings.load(self.datadir)
-        self._interface.use(settings.interface)
+        mine = runner_settings.load()
+        if mine.language in self.languages():
+            settings.language = mine.language
+        self.mine = mine
+        self.most = mine.results
+        self._interface.use(mine.interface or settings.interface)
         self.session = Session(self.lexicon, settings)
 
     def _renderer(self):
@@ -87,11 +103,11 @@ class Dictionary:
     def matches(self, query: str) -> list[Match]:
         """The matches for QUERY: Latin, or after ~e a word in the language
         of the meanings."""
-        self._settings_changed()
+        self.refresh()
         query = query.strip()
         if query[:2].lower() == '~e':
-            return self._reverse(query[2:].strip())[:MOST]
-        return self._latin(query)[:MOST]
+            return self._reverse(query[2:].strip())[:self.most]
+        return self._latin(query)[:self.most]
 
     def _latin(self, line: str) -> list[Match]:
         az = self.session.analyzer
@@ -147,7 +163,7 @@ class Dictionary:
         hits = self.lexicon.reverse(language.code).search(words[0], pos)
         r = self._renderer()
         out = []
-        for hit in hits[:MOST]:
+        for hit in hits[:self.most]:
             title = r.entry_header(hit.entry)
             meaning = r.meaning(hit.entry).lstrip('|').strip()
             out.append(Match(title, meaning,
