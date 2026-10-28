@@ -2,12 +2,12 @@ krunner-py-words
 ================
 
 [py-words](https://github.com/nivaca/py-words), the Latin dictionary, in
-KRunner (KDE Plasma 6): type `la` and a Latin word, and its entries
+KRunner (KDE Plasma 6): type `pw` and a Latin word, and its entries
 appear as you type.
 
-    la amicorum         Latin to the language of the meanings
-    la rem acu tetigisti    a whole line
-    la ~e friend        that language to Latin (also la ~e love V)
+    pw amicorum         Latin to the language of the meanings
+    pw rem acu tetigisti    a whole line
+    pw ~e friend        that language to Latin (also pw ~e love V)
 
 Each match is an entry: its dictionary form as the title, and below it the
 meaning and the forms (`amīc-ōrum GEN.PL`).  Enter opens the search in
@@ -19,15 +19,15 @@ command line do, and a change of settings is seen at the next query.
 Settings
 --------
 
-In KRunner, `la ?` (or `la settings`, `la ajustes`) gives a single match,
+In KRunner, `pw ?` (or `pw settings`, `pw ajustes`) gives a single match,
 "py-words settings", that opens a small window with the settings of the
 runner itself.  So do "py-words in KRunner" in the application menu, the
 Settings action of each match, and `python3 settings_dialog.py`:
 
-- the prefix that starts a search (`la` as usual): a word, without
+- the prefix that starts a search (`pw` as usual): a word, without
   spaces;
 - the language of the meanings: as in py-words, or English or Spanish
-  for KRunner only (`la ~e WORD` then looks for a word of that language);
+  for KRunner only (`pw ~e WORD` then looks for a word of that language);
 - the language of the interface (of this window and of the actions in
   KRunner): as in py-words, or English or Spanish;
 - how many results to show, at most (12 as usual).

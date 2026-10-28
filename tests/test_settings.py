@@ -44,7 +44,7 @@ class SettingsTests(unittest.TestCase):
             self.assertIsNone(runner_settings.good_prefix(wrong))
         with open(runner_settings.path(), 'w') as f:
             f.write('[runner]\nprefix = l a\n')
-        self.assertEqual(runner_settings.load().prefix, 'la')
+        self.assertEqual(runner_settings.load().prefix, 'pw')
 
     def test_the_dialogue_is_translated(self):
         """Each text of the settings window has its Spanish."""

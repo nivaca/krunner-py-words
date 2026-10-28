@@ -3,7 +3,7 @@
 
     python3 settings_dialog.py [--py-words FOLDER]
 
-The prefix of a search (la amicorum), the language of the meanings and
+The prefix of a search (pw amicorum), the language of the meanings and
 that of the interface (those of py-words, or others for KRunner only), and
 how many results to show.  They are saved in runner_settings.path(); the
 runner sees them at the next query.  The window has the look of py-words

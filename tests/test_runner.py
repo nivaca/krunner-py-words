@@ -59,15 +59,15 @@ class PrefixTests(unittest.TestCase):
             import krunner_py_words as k
         except ImportError:
             self.skipTest('needs python3-dbus and python3-gobject')
-        self.assertEqual(k.strip_prefix('la amicorum'), 'amicorum')
-        self.assertEqual(k.strip_prefix('La amicorum'), 'amicorum')
+        self.assertEqual(k.strip_prefix('pw amicorum'), 'amicorum')
+        self.assertEqual(k.strip_prefix('Pw amicorum'), 'amicorum')
         self.assertIsNone(k.strip_prefix('firefox'))
-        self.assertIsNone(k.strip_prefix('lamp'))
+        self.assertIsNone(k.strip_prefix('pwd'))
         self.assertEqual(k.strip_prefix('lat amo', 'lat'), 'amo')
         for text in ('?', ' settings', 'Ajustes '):
             self.assertTrue(k.asks_settings(text))
         self.assertFalse(k.asks_settings('amo'))
-        self.assertIsNone(k.strip_prefix('la amo', 'lat'))
+        self.assertIsNone(k.strip_prefix('pw amo', 'lat'))
 
 
 if __name__ == '__main__':

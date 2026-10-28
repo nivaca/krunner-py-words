@@ -2,7 +2,7 @@
 py-words): ~/.config/krunner-py-words/settings.ini
 
     [runner]
-    prefix = la         ; what starts a search in KRunner: la amicorum
+    prefix = pw         ; what starts a search in KRunner: pw amicorum
     language = es       ; the meanings (empty: as py-words says)
     interface = es      ; the settings and the actions (empty: as py-words)
     results = 12        ; at most so many matches
@@ -17,7 +17,7 @@ import os
 from dataclasses import dataclass
 
 SECTION = 'runner'
-PREFIX = 'la'                   # (as usual)
+PREFIX = 'pw'                   # (as usual)
 RESULTS = 12                    # (as usual)
 MOST_RESULTS = 50
 

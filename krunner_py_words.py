@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""py-words in KRunner: type "la amicorum" (or "la ~e friend") and the
+"""py-words in KRunner: type "pw amicorum" (or "pw ~e friend") and the
 results appear as you type.
 
 A D-Bus runner (the interface org.kde.krunner1): KRunner calls Match for
@@ -11,7 +11,7 @@ program the first time it is needed; it stays, with the dictionary loaded.
 
 Enter opens the search in the window of py-words (words_gui.py); the
 actions copy the results of the match, open the search in the dictionary
-online, and open the settings of the runner (settings_dialog.py).  "la ?" (or "la settings", "la ajustes") gives a
+online, and open the settings of the runner (settings_dialog.py).  "pw ?" (or "pw settings", "pw ajustes") gives a
 single match that opens the settings.  Needs python3-dbus and python3-gobject.
 """
 
@@ -34,7 +34,7 @@ import runner_settings
 SERVICE = 'io.github.nivaca.PyWordsKRunner'
 PATH = '/runner'
 IFACE = 'org.kde.krunner1'
-#  What starts a query, as usual (the settings can change it): la amicorum
+#  What starts a query, as usual (the settings can change it): pw amicorum
 PREFIX = runner_settings.PREFIX
 ICON = 'accessories-dictionary'
 #  KRunner's types of match (KRunner::QueryMatch::CategoryRelevance)
@@ -56,7 +56,7 @@ def strip_prefix(query: str, prefix: str = PREFIX) -> str | None:
 #  The names of the actions, in the language of the interface
 ACTIONS = {'en': ('Copy', 'Open online', 'Settings'),
            'es': ('Copiar', 'Abrir en línea', 'Ajustes')}
-#  What asks for the settings, after the prefix: la ?
+#  What asks for the settings, after the prefix: pw ?
 ASK_SETTINGS = ('?', 'settings', 'ajustes')
 #  The match that opens them: its title and subtext
 SETTINGS_MATCH = {
