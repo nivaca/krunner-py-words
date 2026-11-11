@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=py-words in KRunner
+Name[es]=py-words en KRunner
+Comment=Settings of the py-words runner
+Comment[es]=Ajustes del lanzador de py-words
+Exec=@PYTHON@ @DATADIR@/settings_dialog.py --py-words @PY_WORDS@
+Icon=accessories-dictionary
+Categories=Settings;Utility;

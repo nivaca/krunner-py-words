@@ -38,7 +38,28 @@ the next search.
 Installing
 ----------
 
-It needs py-words (by default in the folder `py-words` next to this one),
+On Fedora, the easiest is the package from
+[Copr](https://copr.fedorainfracloud.org/coprs/nivaca/krunner-py-words/),
+which brings py-words (its package, from nivaca/py-words) and the rest
+with it, and which `dnf upgrade` keeps up to date:
+
+    $ sudo dnf copr enable nivaca/krunner-py-words
+    $ sudo dnf install krunner-py-words
+    $ kquitapp6 krunner          # (it starts again when called)
+
+It installs the runner for every user, in `/usr/share/krunner-py-words`,
+with the same three files as `install.py` below, in `/usr/share`; it uses
+py-words in `/usr/share/py-words`.  If you used `install.py` before, run
+`python3 uninstall.py` first, so that your own files do not hide the
+package's.  The releases on GitHub and Codeberg also have the RPM, signed,
+and its public key (`sudo rpm --import RPM-GPG-KEY-krunner-py-words`, then
+`sudo dnf install ./krunner-py-words-*.noarch.rpm`; it needs the py-words
+package).  `packaging/build-rpm.sh` builds it from this folder,
+`tools/release.py` publishes a release (the signed RPM on both forges, and
+a Copr build), and `packaging/COPR.org` tells how; the version is that of
+`packaging/krunner-py-words.spec`.
+
+From a checkout instead, it needs py-words (by default in the folder `py-words` next to this one),
 and the D-Bus bindings of Python, which Fedora KDE usually has already:
 
     $ sudo dnf install python3-dbus python3-gobject

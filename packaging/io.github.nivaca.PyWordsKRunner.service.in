@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=io.github.nivaca.PyWordsKRunner
+Exec=@PYTHON@ @DATADIR@/krunner_py_words.py --py-words @PY_WORDS@

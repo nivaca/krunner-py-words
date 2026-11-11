@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=py-words
+Comment=Latin dictionary: pw WORD, or pw ~e WORD to Latin
+Icon=accessories-dictionary
+Type=Service
+X-KDE-PluginInfo-Author=Nicolas Vaughan
+X-KDE-PluginInfo-Name=py-words
+X-KDE-PluginInfo-Version=@VERSION@
+X-KDE-PluginInfo-License=GPL-3.0-or-later
+X-KDE-PluginInfo-EnabledByDefault=true
+X-Plasma-API=DBus
+X-Plasma-API-Minimum-Version=2.0
+X-Plasma-DBusRunner-Service=io.github.nivaca.PyWordsKRunner
+X-Plasma-DBusRunner-Path=/runner
+X-Plasma-Runner-Min-Letter-Count=3
