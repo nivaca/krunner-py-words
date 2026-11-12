@@ -54,7 +54,10 @@ py-words in `/usr/share/py-words`.  If you used `install.py` before, run
 package's.  The releases on GitHub and Codeberg also have the RPM, signed,
 and its public key (`sudo rpm --import RPM-GPG-KEY-krunner-py-words`, then
 `sudo dnf install ./krunner-py-words-*.noarch.rpm`; it needs the py-words
-package).  `packaging/build-rpm.sh` builds it from this folder,
+package).  The releases are all signed with the author's key,
+fingerprint `236E F043 AB7A 4434 A05C A4EC B554 9099 FC0D 6464`; a copy of the public key is in
+`packaging/RPM-GPG-KEY-krunner-py-words`, and `packaging/build-rpm.sh
+--sign` signs only with that key.  `packaging/build-rpm.sh` builds it from this folder,
 `tools/release.py` publishes a release (the signed RPM on both forges, and
 a Copr build), and `packaging/COPR.org` tells how; the version is that of
 `packaging/krunner-py-words.spec`.

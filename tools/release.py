@@ -80,6 +80,13 @@ VERSION = spec_query("%{version}")
 TAG = f"v{VERSION}"
 
 
+def signing_key() -> str:
+    """The project's signing key, as packaging/build-rpm.sh pins it."""
+    with open(os.path.join(ROOT, "packaging", "build-rpm.sh"), encoding="utf-8") as f:
+        m = re.search(r'SIGNING_KEY="\$\{SIGNING_KEY:-([0-9A-F]{40})\}"', f.read())
+    return m.group(1) if m else ""
+
+
 def rpm_nvr() -> str:
     """NAME-VERSION-RELEASE of the RPM that packaging/build-rpm.sh makes, as
     its spec says (krunner-py-words-1.1-1.fc45)."""
@@ -146,6 +153,11 @@ class Release:
         for tool in tools:
             if not shutil.which(tool):
                 sys.exit(f"release.py: {tool} is not installed")
+        key = signing_key()
+        if not key or subprocess.run(["gpg", "--batch", "--list-secret-keys", key],
+                                     capture_output=True).returncode != 0:
+            sys.exit(f"release.py: the signing key {key or '(none)'} is not in this "
+                     "machine's gpg keyring; import it first (see packaging/COPR.org)")
         self.read("git", "rev-parse", "--git-dir")      # (stops if not a repository)
         branch = self.read("git", "rev-parse", "--abbrev-ref", "HEAD")
         if branch != BRANCH:
