@@ -55,7 +55,7 @@ package's.  The releases on GitHub and Codeberg also have the RPM, signed,
 and its public key (`sudo rpm --import RPM-GPG-KEY-krunner-py-words`, then
 `sudo dnf install ./krunner-py-words-*.noarch.rpm`; it needs the py-words
 package).  The releases are all signed with the author's key,
-fingerprint `236E F043 AB7A 4434 A05C A4EC B554 9099 FC0D 6464`; a copy of the public key is in
+fingerprint `8187 0643 CA22 1AF9 0C30 554E BE68 32CD 3599 4948`; a copy of the public key is in
 `packaging/RPM-GPG-KEY-krunner-py-words`, and `packaging/build-rpm.sh
 --sign` signs only with that key.  `packaging/build-rpm.sh` builds it from this folder,
 `tools/release.py` publishes a release (the signed RPM on both forges, and
