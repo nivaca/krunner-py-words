@@ -63,7 +63,7 @@ a Copr build), and `packaging/COPR.org` tells how; the version is that of
 `packaging/krunner-py-words.spec`.
 
 From a checkout instead, it needs py-words (by default in the folder `py-words` next to this one),
-and the D-Bus bindings of Python, which Fedora KDE usually has already:
+Python 3.14 or later, and the D-Bus bindings of Python, which Fedora KDE usually has already:
 
     $ sudo dnf install python3-dbus python3-gobject
 

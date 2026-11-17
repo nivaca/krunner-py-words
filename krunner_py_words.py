@@ -31,6 +31,9 @@ from gi.repository import GLib
 import dictionary
 import runner_settings
 
+if sys.version_info < (3, 14):
+    sys.exit('krunner-py-words needs Python 3.14 or later.')
+
 SERVICE = 'io.github.nivaca.PyWordsKRunner'
 PATH = '/runner'
 IFACE = 'org.kde.krunner1'

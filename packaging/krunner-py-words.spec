@@ -31,7 +31,7 @@ BuildRequires:  py-words
 BuildRequires:  python3-dbus
 BuildRequires:  python3-gobject-base
 
-Requires:       python3 >= 3.11
+Requires:       python3 >= 3.14
 Requires:       py-words
 Requires:       python3-dbus
 Requires:       python3-gobject-base

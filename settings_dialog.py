@@ -20,6 +20,9 @@ import dictionary
 import runner_settings
 from runner_settings import MOST_RESULTS, RunnerSettings, good_prefix
 
+if sys.version_info < (3, 14):
+    sys.exit('krunner-py-words needs Python 3.14 or later.')
+
 #  The languages of the interface (those of TEXTS)
 INTERFACES = {'en': 'English', 'es': 'Spanish'}
 

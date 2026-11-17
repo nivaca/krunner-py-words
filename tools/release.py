@@ -51,6 +51,9 @@ import subprocess
 import sys
 import tempfile
 
+if sys.version_info < (3, 14):
+    sys.exit("krunner-py-words needs Python 3.14 or later.")
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
