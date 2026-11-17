@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (C) 2026 Nicolas Vaughan <nivaca@fastmail.com>
+# Copyright (C) 2026 Nicolas Vaughan <nicolasvaughan@proton.me>
 # This file is part of krunner-py-words. See the LICENCE.txt file for details.
 """Publishes a release of krunner-py-words on GitHub (with gh) and on
 Codeberg (with tea): the tag vVERSION (the Version of the spec,

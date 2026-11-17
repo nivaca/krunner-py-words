@@ -1,5 +1,5 @@
 # krunner-py-words: py-words, the Latin dictionary, in KRunner.
-# Copyright (C) 2026 Nicolas Vaughan <nivaca@fastmail.com>
+# Copyright (C) 2026 Nicolas Vaughan <nicolasvaughan@proton.me>
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -104,9 +104,9 @@ cd -
 %{_datadir}/applications/krunner-py-words-settings.desktop
 
 %changelog
-* Tue Nov 17 2026 Nicolas Vaughan <nivaca@fastmail.com> - 1.1.1-1
+* Tue Nov 17 2026 Nicolas Vaughan <nicolasvaughan@proton.me> - 1.1.1-1
 - Requires Python 3.14 or later
 
-* Wed Nov 11 2026 Nicolas Vaughan <nivaca@fastmail.com> - 1.1-1
+* Wed Nov 11 2026 Nicolas Vaughan <nicolasvaughan@proton.me> - 1.1-1
 - First package: the runner, started by D-Bus, for every user, with the
   py-words package; its settings in the application menu
