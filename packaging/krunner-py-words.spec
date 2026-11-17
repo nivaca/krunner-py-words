@@ -13,7 +13,7 @@
 %global py_words_dir %{_datadir}/py-words
 
 Name:           krunner-py-words
-Version:        1.1
+Version:        1.1.1
 Release:        1%{?dist}
 Summary:        py-words, the Latin dictionary, in KRunner
 
@@ -104,6 +104,9 @@ cd -
 %{_datadir}/applications/krunner-py-words-settings.desktop
 
 %changelog
+* Tue Nov 17 2026 Nicolas Vaughan <nivaca@fastmail.com> - 1.1.1-1
+- Requires Python 3.14 or later
+
 * Wed Nov 11 2026 Nicolas Vaughan <nivaca@fastmail.com> - 1.1-1
 - First package: the runner, started by D-Bus, for every user, with the
   py-words package; its settings in the application menu
