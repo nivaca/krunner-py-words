@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 # The RPM (packaging/build-rpm.sh)
 /build/
+
+# Built packages (wheel, source package, AppImage, RPM)
+/dist/
