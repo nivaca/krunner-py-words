@@ -13,7 +13,7 @@
 %global py_words_dir %{_datadir}/py-words
 
 Name:           krunner-py-words
-Version:        1.1.1
+Version:        1.1.2
 Release:        1%{?dist}
 Summary:        py-words, the Latin dictionary, in KRunner
 
@@ -104,6 +104,11 @@ cd -
 %{_datadir}/applications/krunner-py-words-settings.desktop
 
 %changelog
+* Sun Nov 22 2026 Nicolas Vaughan <nicolasvaughan@proton.me> - 1.1.2-1
+- Every release signed: the RPM with its detached signature (.asc),
+  SHA256SUMS and its signature, the public key, and the tag
+- The contact email is now nicolasvaughan@proton.me
+
 * Tue Nov 17 2026 Nicolas Vaughan <nicolasvaughan@proton.me> - 1.1.1-1
 - Requires Python 3.14 or later
 

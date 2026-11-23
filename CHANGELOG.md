@@ -6,7 +6,7 @@ files and signed RPMs, are on
 is also on [Codeberg](https://codeberg.org/nivaca/krunner-py-words). The
 RPM for Fedora is on Copr, in `nivaca/krunner-py-words`.
 
-## Unreleased
+## 1.1.2 — 2026-11-22
 
 - `packaging/build-rpm.sh` copies the newest RPM into `dist/` too, in
   place of the older ones there.

@@ -6,7 +6,7 @@ sus archivos zip y sus RPM firmados, están en
 está también en [Codeberg](https://codeberg.org/nivaca/krunner-py-words).
 El RPM para Fedora está en Copr, en `nivaca/krunner-py-words`.
 
-## Sin publicar
+## 1.1.2 — 2026-11-22
 
 - `packaging/build-rpm.sh` copia también el RPM más reciente en `dist/`,
   en lugar de los más viejos que haya allí.
