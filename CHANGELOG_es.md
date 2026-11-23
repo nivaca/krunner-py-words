@@ -11,6 +11,13 @@ El RPM para Fedora está en Copr, en `nivaca/krunner-py-words`.
 - `packaging/build-rpm.sh` copia también el RPM más reciente en `dist/`,
   en lugar de los más viejos que haya allí.
 - El correo de contacto es ahora nicolasvaughan@proton.me.
+- **Cada versión firmada**: además de la firma dentro del RPM, cada
+  archivo publicado trae su firma aparte (`.asc`), con `SHA256SUMS` y su
+  firma, y con la clave pública (ahora la copia de `packaging/`); el tag
+  de la versión va firmado también. `tools/release.py` comprueba cada
+  firma con la clave publicada antes de publicar nada
+  (`tools/sign_release.py`). El README explica cómo comprobar una
+  descarga.
 
 ## 1.1.1 — 2026-11-17
 

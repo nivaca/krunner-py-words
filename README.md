@@ -62,6 +62,26 @@ fingerprint `8187 0643 CA22 1AF9 0C30 554E BE68 32CD 3599 4948`; a copy of the p
 a Copr build), and `packaging/COPR.org` tells how; the version is that of
 `packaging/krunner-py-words.spec`.
 
+After 1.1.1, a release has these files:
+
+    krunner-py-words-VERSION-1.fc45.noarch.rpm   the package for Fedora, signed
+    FILE.asc                                     the signature of each file
+    SHA256SUMS, SHA256SUMS.asc                   the checksums, and their signature
+    RPM-GPG-KEY-krunner-py-words                 the key that signs them all
+
+Every file, and the tag of the version, is signed with the same key.
+`tools/release.py` checks each signature with the published key before it
+publishes anything.  To check a download, import the key once, then check
+the file's signature and its checksum:
+
+    $ gpg --import RPM-GPG-KEY-krunner-py-words
+    $ gpg --verify krunner-py-words-VERSION-1.fc45.noarch.rpm.asc krunner-py-words-VERSION-1.fc45.noarch.rpm
+    $ gpg --verify SHA256SUMS.asc SHA256SUMS && sha256sum -c --ignore-missing SHA256SUMS
+
+The RPM carries its signature inside too: after `sudo rpm --import
+RPM-GPG-KEY-krunner-py-words`, `rpm -K` checks it.  The tag can be checked
+in a clone with `git tag -v vVERSION`.
+
 From a checkout instead, it needs py-words (by default in the folder `py-words` next to this one),
 Python 3.14 or later, and the D-Bus bindings of Python, which Fedora KDE usually has already:
 

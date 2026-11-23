@@ -4,8 +4,13 @@
 # This file is part of krunner-py-words. See the LICENCE.txt file for details.
 """Publishes a release of krunner-py-words on GitHub (with gh) and on
 Codeberg (with tea): the tag vVERSION (the Version of the spec,
-packaging/krunner-py-words.spec), with the signed RPM and its public key
-attached, and builds it on Copr.
+packaging/krunner-py-words.spec), signed, with the signed RPM attached,
+with its detached signature (FILE.asc), SHA256SUMS and its signature, and
+the public key that checks them all; and builds it on Copr.
+
+Everything is signed with the project's key (SIGNING_KEY of
+packaging/build-rpm.sh), and every signature is checked, against the public
+key published, before anything is published.
 
     python3 tools/release.py [--redo] [--notes TEXT | --notes-file FILE]
                              [--no-build] [--no-copr]
@@ -14,12 +19,17 @@ attached, and builds it on Copr.
 In order, each step only if it is needed:
 
 1. checks that the repository is on main, with nothing left to commit,
-   and that gh, tea, rpmbuild and copr-cli are installed;
-2. makes the signed RPM and its public key in build/rpm/
-   (packaging/build-rpm.sh --sign; gpg asks for the passphrase), unless
-   --no-build (then those in build/rpm/ are used);
-3. tags HEAD as vVERSION.  If the tag is there already on another commit,
-   it stops, unless --redo moves it;
+   that gh, tea, gpg, rpmbuild and copr-cli are installed, and that the
+   signing key is in gpg;
+2. makes the signed RPM in build/rpm/ (packaging/build-rpm.sh --sign,
+   which checks its signature; gpg asks for the passphrase), unless
+   --no-build (then the one in build/rpm/ is used); then signs it
+   (tools/sign_release.py: FILE.asc, dist/SHA256SUMS and its .asc), and
+   checks each signature with only the public key that is published
+   (packaging/RPM-GPG-KEY-krunner-py-words);
+3. tags HEAD as vVERSION, a tag signed with the same key (git tag --sign),
+   and checks it (git tag --verify).  If the tag is there already on
+   another commit, it stops, unless --redo moves it;
 4. pushes main and the tag to the remote (origin, whose push addresses are
    GitHub and Codeberg; --redo pushes the tag with --force).  Whether each
    forge has the tag already is asked of each push address, as the remote
@@ -64,7 +74,9 @@ BRANCH = "main"
 TEA_CWD = tempfile.gettempdir()
 FORGES = {"github": "github.com", "codeberg": "codeberg.org"}
 SPEC = os.path.join("packaging", f"{NAME}.spec")
-RPM_KEY = os.path.join("build", "rpm", f"RPM-GPG-KEY-{NAME}")
+#  La clave pública que va con cada versión, y que comprueba todas sus firmas
+PUBLIC_KEY = os.path.join("packaging", f"RPM-GPG-KEY-{NAME}")
+SUMS = os.path.join("dist", "SHA256SUMS")
 COPR_PROJECT = NAME             # (of the copr-cli user, nivaca)
 
 
@@ -150,17 +162,21 @@ class Release:
 
     # ---- checks --------------------------------------------------------- #
     def check(self):
-        tools = ("git",) + tuple(t for t, f in (("gh", "github"), ("tea", "codeberg"))
+        tools = ("git", "gpg") + tuple(t for t, f in (("gh", "github"), ("tea", "codeberg"))
                                  if f in self.forges)
         tools += ("rpmbuild",) + (() if self.args.no_copr else ("copr-cli",))
         for tool in tools:
             if not shutil.which(tool):
                 sys.exit(f"release.py: {tool} is not installed")
+        #  Todo se firma, siempre: sin la clave no hay versión
         key = signing_key()
         if not key or subprocess.run(["gpg", "--batch", "--list-secret-keys", key],
                                      capture_output=True).returncode != 0:
             sys.exit(f"release.py: the signing key {key or '(none)'} is not in this "
                      "machine's gpg keyring; import it first (see packaging/COPR.org)")
+        if not os.path.isfile(os.path.join(ROOT, PUBLIC_KEY)):
+            sys.exit(f"release.py: there is no {PUBLIC_KEY}, the public key published "
+                     "with the release")
         self.read("git", "rev-parse", "--git-dir")      # (stops if not a repository)
         branch = self.read("git", "rev-parse", "--abbrev-ref", "HEAD")
         if branch != BRANCH:
@@ -198,6 +214,17 @@ class Release:
             return
         self.plan("Make the signed RPM", "packaging/build-rpm.sh", "--sign")
 
+    def sign(self):
+        """Every file published signed (FILE.asc), with SHA256SUMS and its
+        signature, and each signature checked with only the public key
+        published."""
+        signed = [f for f in self.files if f != PUBLIC_KEY]
+        self.plan("Sign the files, and check each signature with the published key",
+                  sys.executable, os.path.join("tools", "sign_release.py"), "--key",
+                  signing_key(), "--public", PUBLIC_KEY, "--sums", SUMS, *signed)
+        self.files = signed + [f + ".asc" for f in signed] + [SUMS, SUMS + ".asc",
+                                                              PUBLIC_KEY]
+
     def tag(self, repos: dict):
         head = self.read("git", "rev-parse", "HEAD")
         tagged = self.read("git", "rev-parse", "--verify", "--quiet",
@@ -209,8 +236,10 @@ class Release:
                      f"HEAD ({head[:7]}); --redo moves it (and replaces the files "
                      "of the releases)")
         else:
-            self.plan("Move the tag to HEAD" if tagged else "Tag HEAD",
-                      "git", "tag", "--force", "--annotate", TAG, "--message", TAG)
+            self.plan("Move the tag to HEAD, signed" if tagged else "Tag HEAD, signed",
+                      "git", "tag", "--force", "--sign", "--local-user", signing_key(),
+                      TAG, "--message", TAG)
+            self.plan("Check the signature of the tag", "git", "tag", "--verify", TAG)
         self.plan(f"Push {BRANCH}", "git", "push", self.args.remote, BRANCH)
         #  With --redo the tag is always pushed with --force (to all the
         #  push addresses of the remote)
@@ -302,10 +331,11 @@ class Release:
     def __call__(self):
         args = self.args
         self.forges = [args.only] if args.only else ["github", "codeberg"]
-        self.files = [rpm(), RPM_KEY]
+        self.files = [rpm(), PUBLIC_KEY]
         self.check()
         repos = self.repos()
         self.build()
+        self.sign()
         self.tag(repos)
         for forge in self.forges:
             getattr(self, forge)(repos[forge][0])
@@ -317,8 +347,8 @@ class Release:
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="tools/release.py",
-        description=f"Publish {TAG} on GitHub and Codeberg, with the signed RPM, "
-                    "and build it on Copr.")
+        description=f"Publish {TAG} on GitHub and Codeberg, with the signed RPM "
+                    "and the signatures of the files, and build it on Copr.")
     parser.add_argument("--redo", action="store_true",
                         help=f"move {TAG} to HEAD if it is on another commit (here and "
                              "on the forges), and replace the files of the releases")
