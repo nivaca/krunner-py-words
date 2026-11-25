@@ -26,6 +26,9 @@ El RPM para Fedora está en Copr, en `nivaca/krunner-py-words`.
   nunca lo publica. `tools/release.py` reúne ahora el depósito después de la
   etiqueta y lo sube como borrador, salvo con `--no-zenodo`. Los metadatos
   están en `.zenodo.json`.
+- `tools/zenodo.py`: la descripción del depósito deja fuera la línea que
+  lleva a los README en otras lenguas y la sección Screenshots, cuyas
+  imágenes Zenodo no muestra.
 
 ## 1.1.2 — 2026-11-22
 
