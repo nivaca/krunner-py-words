@@ -49,6 +49,11 @@ Codeberg, none); a release that is there keeps its notes.
 
 The repositories are found from the push addresses of the remote; tea uses
 the login named codeberg unless --tea-login says another.
+
+The deposit for Zenodo is collected in dist/zenodo/ after the tag
+(tools/zenodo.py collect: the tree of the tag, signed, with SHA256SUMS and
+the public key); --zenodo also uploads it to Zenodo as a draft, which is
+never published here: review it and publish it on Zenodo by hand.
 """
 
 import argparse
@@ -328,6 +333,23 @@ class Release:
         return [{re.sub("[^a-z]", "", k.lower()): v for k, v in r.items()} for r in rows]
 
     # ---- all ------------------------------------------------------------ #
+    def zenodo_collect(self):
+        """The deposit of the release for Zenodo, in dist/zenodo/ (tools/zenodo.py): the tree of the tag, signed,
+        with SHA256SUMS and the public key, each signature checked with only that key."""
+        self.plan("Zenodo: collect the deposit in dist/zenodo/", sys.executable, "tools/zenodo.py", "collect",
+                  "--tag", TAG)
+
+    def zenodo_upload(self):
+        """With --zenodo, dist/zenodo/ uploaded to Zenodo as a draft, never published: it is reviewed and published
+        there by hand."""
+        if not self.args.zenodo:
+            return
+        # (sin token se para aquí, antes de hacer nada, y no al final de la versión)
+        if not os.environ.get("ZENODO_TOKEN") and not self.args.dry_run:
+            sys.exit("release.py: --zenodo needs a Zenodo token in $ZENODO_TOKEN (see tools/zenodo.py)")
+        self.plan("Zenodo: upload the deposit as a draft (not published)", sys.executable, "tools/zenodo.py",
+                  "upload")
+
     def __call__(self):
         args = self.args
         self.forges = [args.only] if args.only else ["github", "codeberg"]
@@ -337,10 +359,12 @@ class Release:
         self.build()
         self.sign()
         self.tag(repos)
+        self.zenodo_collect()
         for forge in self.forges:
             getattr(self, forge)(repos[forge][0])
         if not args.no_copr:
             self.copr()
+        self.zenodo_upload()
         self.run_plan()
 
 
@@ -366,6 +390,8 @@ def main(argv=None):
                         help="the remote to push to (default: origin)")
     parser.add_argument("--tea-login", default="codeberg",
                         help="the login of tea for Codeberg (default: codeberg)")
+    parser.add_argument("--zenodo", action="store_true",
+                        help="also upload dist/zenodo/ to Zenodo as a draft, not published ($ZENODO_TOKEN)")
     parser.add_argument("-n", "--dry-run", action="store_true", help="only show the commands")
     parser.add_argument("-y", "--yes", action="store_true",
                         help="do not ask before running them")

@@ -6,6 +6,18 @@ files and signed RPMs, are on
 is also on [Codeberg](https://codeberg.org/nivaca/krunner-py-words). The
 RPM for Fedora is on Copr, in `nivaca/krunner-py-words`.
 
+## Unreleased
+
+- `tools/zenodo.py` prepares the deposit of a release for Zenodo. `collect`
+  puts in `dist/zenodo/` the tree of the tag as
+  `krunner-py-words-VERSION-source.tar.gz`, with its signature, a signed
+  `SHA256SUMS` of the deposit and the public key, and checks every signature
+  with only that key (`--packages` adds the files of the release). `upload`
+  sends it to Zenodo as a draft, a new version of the deposit if there is
+  one already, and never publishes it. `tools/release.py` now collects the
+  deposit after the tag, and uploads it with `--zenodo`. The metadata are in
+  `.zenodo.json`.
+
 ## 1.1.2 — 2026-11-22
 
 - `packaging/build-rpm.sh` copies the newest RPM into `dist/` too, in
