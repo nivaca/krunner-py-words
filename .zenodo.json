@@ -1,12 +1,19 @@
 {
   "title": "krunner-py-words",
   "upload_type": "software",
-  "description": "<p>py-words, the Latin dictionary, in KRunner.</p>",
   "creators": [
     {
       "name": "Vaughan, Nicolas",
       "affiliation": "Universidad de los Andes",
       "orcid": "0000-0002-2877-0539"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "Vaughan, Nicolas",
+      "affiliation": "Universidad de los Andes",
+      "orcid": "0000-0002-2877-0539",
+      "type": "ProjectLeader"
     }
   ],
   "license": "gpl-3.0-or-later",
@@ -16,5 +23,10 @@
     "dictionary",
     "KRunner",
     "KDE Plasma"
-  ]
+  ],
+  "languages": [
+    "eng"
+  ],
+  "programming_language": "python",
+  "development_status": "active"
 }
