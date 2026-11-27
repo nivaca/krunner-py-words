@@ -140,7 +140,9 @@ gpg --edit-key 81870643CA221AF90C30554EBE6832CD35994948 trust                   
    - =-n VERSION= sets =Version:= and resets =Release:= to 1.
    - For a packaging-only fix with the same upstream version, leave out
      =-n=. That bumps =Release:= (1 → 2).
-2. Commit, then publish with =tools/release.py=. Besides the signed
+2. Commit, then publish with =tools/release.py=. It runs the tests first
+   (=tools/test.py=, each test file in a process of its own, all at once;
+   =--no-tests= leaves them out). Besides the signed
    tag (checked with =git tag -v=) and the releases, it builds the signed
    RPM (gpg asks for the passphrase), signs it (=FILE.asc=, =SHA256SUMS=)
    and checks each signature with only the published key, attaches all of

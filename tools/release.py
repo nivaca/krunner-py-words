@@ -13,7 +13,7 @@ packaging/build-rpm.sh), and every signature is checked, against the public
 key published, before anything is published.
 
     python3 tools/release.py [--redo] [--notes TEXT | --notes-file FILE]
-                             [--no-build] [--no-copr]
+                             [--no-build] [--no-tests] [--no-copr]
                              [--only github|codeberg] [--dry-run] [--yes]
 
 In order, each step only if it is needed:
@@ -21,22 +21,24 @@ In order, each step only if it is needed:
 1. checks that the repository is on main, with nothing left to commit,
    that gh, tea, gpg, rpmbuild and copr-cli are installed, and that the
    signing key is in gpg;
-2. makes the signed RPM in build/rpm/ (packaging/build-rpm.sh --sign,
+2. runs the tests, each file in a process of its own, at once
+   (tools/test.py; unless --no-tests);
+3. makes the signed RPM in build/rpm/ (packaging/build-rpm.sh --sign,
    which checks its signature; gpg asks for the passphrase), unless
    --no-build (then the one in build/rpm/ is used); then signs it
    (tools/sign_release.py: FILE.asc, build/release/SHA256SUMS and its .asc), and
    checks each signature with only the public key that is published
    (packaging/RPM-GPG-KEY-krunner-py-words);
-3. tags HEAD as vVERSION, a tag signed with the same key (git tag --sign),
+4. tags HEAD as vVERSION, a tag signed with the same key (git tag --sign),
    and checks it (git tag --verify).  If the tag is there already on
    another commit, it stops, unless --redo moves it;
-4. pushes main and the tag to the remote (origin, whose push addresses are
+5. pushes main and the tag to the remote (origin, whose push addresses are
    GitHub and Codeberg; --redo pushes the tag with --force).  Whether each
    forge has the tag already is asked of each push address, as the remote
    may have no address to fetch from;
-5. on each forge, makes the release of the tag, or keeps the one there is,
+6. on each forge, makes the release of the tag, or keeps the one there is,
    and attaches the files to it, replacing those of the same name;
-6. sends the source RPM to Copr (copr-cli build, project
+7. sends the source RPM to Copr (copr-cli build, project
    nivaca/krunner-py-words), unless --no-copr.  Copr builds it for each Fedora of
    the project and signs it with its own key; each build needs a higher
    version-release than the last, so the spec must have been bumped
@@ -229,6 +231,12 @@ class Release:
         return found
 
     # ---- steps ---------------------------------------------------------- #
+    def tests(self):
+        if not self.args.no_tests:
+            #  (a la vez, cada archivo en su proceso: tools/test.py)
+            self.plan("Run the tests", sys.executable,
+                      os.path.join("tools", "test.py"))
+
     def build(self):
         if self.args.no_build:
             for f in self.files:
@@ -379,6 +387,7 @@ class Release:
         self.files = [rpm(), PUBLIC_KEY]
         self.check()
         repos = self.repos()
+        self.tests()
         self.build()
         self.sign()
         self.tag(repos)
@@ -412,6 +421,8 @@ def main(argv=None):
                        help="the notes of a new release, from FILE")
     parser.add_argument("--no-build", action="store_true",
                         help="use the RPM in build/rpm/, without making it again")
+    parser.add_argument("--no-tests", action="store_true",
+                        help="don't run the tests first")
     parser.add_argument("--no-copr", action="store_true",
                         help="do not send it to Copr")
     parser.add_argument("--only", choices=("github", "codeberg"),

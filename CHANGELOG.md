@@ -8,6 +8,9 @@ RPM for Fedora is on Copr, in `nivaca/krunner-py-words`.
 
 ## Unreleased
 
+- `tools/test.py` runs the tests at once, each test file in a process of
+  its own; `tools/release.py` runs them so before anything else
+  (`--no-tests` leaves them out).
 - Only the RPM is kept here: `tools/release.py` makes and signs
   `SHA256SUMS` in `build/release/` (not `dist/`), and the deposit for
   Zenodo in `build/zenodo/`, publishes them from there and deletes both at

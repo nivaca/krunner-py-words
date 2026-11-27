@@ -120,7 +120,10 @@ How it works
 - `settings_dialog.py`: the settings window; `runner_settings.py`: the
   file that keeps them.
 - `install.py`: the three files above; `uninstall.py` removes them.
-- `tests/`: `python3 -m unittest discover -s tests`.
+- `tests/`: `python3 tools/test.py` runs them at once, each test file in
+  a process of its own (`-j N` sets how many at a time); `python3 -m
+  unittest discover -s tests` runs them one after the other.
+  `tools/release.py` runs them first, with `tools/test.py`.
 
 To see what it does, stop it (`python3 -c 'import install;
 install.stop_runner()'`) and start it by hand, `python3
