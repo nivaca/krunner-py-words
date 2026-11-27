@@ -8,6 +8,10 @@ El RPM para Fedora está en Copr, en `nivaca/krunner-py-words`.
 
 ## Sin publicar
 
+- Aquí solo se guarda el RPM: `tools/release.py` hace y firma `SHA256SUMS`
+  en `build/release/` (no en `dist/`), y el depósito para Zenodo en
+  `build/zenodo/`, los publica desde allí y al final borra las dos
+  carpetas; `dist/` guarda solo la copia del RPM.
 - `tools/zenodo.py`: la descripción del depósito es ahora el README entero
   de la etiqueta, en HTML. El borrador recibe además el colaborador (el
   director del proyecto), los idiomas, el copyright, el repositorio en
@@ -18,7 +22,7 @@ El RPM para Fedora está en Copr, en `nivaca/krunner-py-words`.
   `$ZENODO_TOKEN`; `tools/zenodo.py check-token` dice si hay uno.
 
 - `tools/zenodo.py` prepara el depósito de una versión en Zenodo. `collect`
-  deja en `dist/zenodo/` el árbol de la etiqueta como
+  deja en `build/zenodo/` el árbol de la etiqueta como
   `krunner-py-words-VERSIÓN-source.tar.gz`, con su firma, un `SHA256SUMS`
   del depósito, firmado, y la clave pública, y comprueba cada firma con solo
   esa clave (`--packages` añade los archivos de la versión). `upload` lo

@@ -24,7 +24,7 @@ In order, each step only if it is needed:
 2. makes the signed RPM in build/rpm/ (packaging/build-rpm.sh --sign,
    which checks its signature; gpg asks for the passphrase), unless
    --no-build (then the one in build/rpm/ is used); then signs it
-   (tools/sign_release.py: FILE.asc, dist/SHA256SUMS and its .asc), and
+   (tools/sign_release.py: FILE.asc, build/release/SHA256SUMS and its .asc), and
    checks each signature with only the public key that is published
    (packaging/RPM-GPG-KEY-krunner-py-words);
 3. tags HEAD as vVERSION, a tag signed with the same key (git tag --sign),
@@ -42,6 +42,11 @@ In order, each step only if it is needed:
    version-release than the last, so the spec must have been bumped
    (rpmdev-bumpspec, see packaging/COPR.org).
 
+Only the RPM is kept here once the release is done (in build/rpm/, and its
+copy in dist/, which holds nothing else): at the end, build/release/ (where
+SHA256SUMS and its signature are made) and build/zenodo/ are deleted, since
+the forges and Zenodo have what they held.
+
 Before doing anything, it shows the commands it will run and asks; --yes
 does not ask, --dry-run only shows them.  The notes of a new release are
 --notes, --notes-file, or else made by GitHub from the commits (on
@@ -50,7 +55,7 @@ Codeberg, none); a release that is there keeps its notes.
 The repositories are found from the push addresses of the remote; tea uses
 the login named codeberg unless --tea-login says another.
 
-The deposit for Zenodo is collected in dist/zenodo/ after the tag
+The deposit for Zenodo is collected in build/zenodo/ after the tag
 (tools/zenodo.py collect: the tree of the tag, signed, with SHA256SUMS and
 the public key), and at the end uploaded to Zenodo and published (the token in
 $ZENODO_TOKEN or the keyring), unless --no-zenodo. It is published there, with a new DOI;
@@ -82,7 +87,10 @@ FORGES = {"github": "github.com", "codeberg": "codeberg.org"}
 SPEC = os.path.join("packaging", f"{NAME}.spec")
 #  La clave pública que va con cada versión, y que comprueba todas sus firmas
 PUBLIC_KEY = os.path.join("packaging", f"RPM-GPG-KEY-{NAME}")
-SUMS = os.path.join("dist", "SHA256SUMS")
+#  Lo que se publica, además del RPM, se hace en build/release/, no en dist/:
+#  en local solo se guarda el RPM (en build/rpm/, y su copia en dist/)
+OUT = os.path.join("build", "release")
+SUMS = os.path.join(OUT, "SHA256SUMS")
 COPR_PROJECT = NAME             # (of the copr-cli user, nivaca)
 
 
@@ -235,6 +243,8 @@ class Release:
         signature, and each signature checked with only the public key
         published."""
         signed = [f for f in self.files if f != PUBLIC_KEY]
+        if not self.args.dry_run:
+            os.makedirs(os.path.join(ROOT, OUT), exist_ok=True)
         self.plan("Sign the files, and check each signature with the published key",
                   sys.executable, os.path.join("tools", "sign_release.py"), "--key",
                   signing_key(), "--public", PUBLIC_KEY, "--sums", SUMS, *signed)
@@ -345,13 +355,13 @@ class Release:
 
     # ---- all ------------------------------------------------------------ #
     def zenodo_collect(self):
-        """The deposit of the release for Zenodo, in dist/zenodo/ (tools/zenodo.py): the tree of the tag, signed,
+        """The deposit of the release for Zenodo, in build/zenodo/ (tools/zenodo.py): the tree of the tag, signed,
         with SHA256SUMS and the public key, each signature checked with only that key."""
-        self.plan("Zenodo: collect the deposit in dist/zenodo/", sys.executable, "tools/zenodo.py", "collect",
+        self.plan("Zenodo: collect the deposit in build/zenodo/", sys.executable, "tools/zenodo.py", "collect",
                   "--tag", TAG)
 
     def zenodo_upload(self):
-        """Unless --no-zenodo, dist/zenodo/ uploaded to Zenodo and published (with
+        """Unless --no-zenodo, build/zenodo/ uploaded to Zenodo and published (with
         --zenodo-draft, only as a draft, published there by hand)."""
         if self.args.no_zenodo:
             return
@@ -378,7 +388,14 @@ class Release:
         if not args.no_copr:
             self.copr()
         self.zenodo_upload()
+        self.clean_up()
         self.run_plan()
+
+    def clean_up(self):
+        """Once all is published: only the RPM stays here (build/rpm/, and its
+        copy in dist/); the rest is on the forges and on Zenodo."""
+        self.plan("Delete what was published from build/ (only the RPM stays)",
+                  "rm", "-rf", OUT, os.path.join("build", "zenodo"))
 
 
 def main(argv=None):
@@ -404,7 +421,7 @@ def main(argv=None):
     parser.add_argument("--tea-login", default="codeberg",
                         help="the login of tea for Codeberg (default: codeberg)")
     parser.add_argument("--no-zenodo", action="store_true",
-                        help="don't upload dist/zenodo/ to Zenodo (by default it is uploaded and "
+                        help="don't upload build/zenodo/ to Zenodo (by default it is uploaded and "
                              "published, with the token in $ZENODO_TOKEN or the keyring)")
     parser.add_argument("--zenodo-draft", action="store_true",
                         help="upload it to Zenodo as a draft, not published")
