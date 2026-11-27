@@ -2,66 +2,69 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Nicolas Vaughan <nicolasvaughan@proton.me>
 # This file is part of krunner-py-words. See the LICENCE.txt file for details.
-"""Publishes a release of krunner-py-words on GitHub (with gh) and on
-Codeberg (with tea): the tag vVERSION (the Version of the spec,
-packaging/krunner-py-words.spec), signed, with the signed RPM attached,
-with its detached signature (FILE.asc), SHA256SUMS and its signature, and
-the public key that checks them all; and builds it on Copr.
+"""Publica una versión de krunner-py-words en GitHub (con gh) y en
+Codeberg (con tea): la etiqueta vVERSIÓN (el Version del spec,
+packaging/krunner-py-words.spec), firmada, con el RPM firmado adjunto,
+con su firma separada (ARCHIVO.asc), SHA256SUMS y su firma, y la clave
+pública que las comprueba todas; y la compila en Copr.
 
-Everything is signed with the project's key (SIGNING_KEY of
-packaging/build-rpm.sh), and every signature is checked, against the public
-key published, before anything is published.
+Todo se firma con la clave del proyecto (SIGNING_KEY de
+packaging/build-rpm.sh), y cada firma se comprueba con la clave pública
+que se publica, antes de publicar nada.
 
     python3 tools/release.py [--redo] [--notes TEXT | --notes-file FILE]
                              [--no-build] [--no-tests] [--no-copr]
                              [--only github|codeberg] [--dry-run] [--yes]
 
-In order, each step only if it is needed:
+En orden, cada paso solo si hace falta:
 
-1. checks that the repository is on main, with nothing left to commit,
-   that gh, tea, gpg, rpmbuild and copr-cli are installed, and that the
-   signing key is in gpg;
-2. runs the tests, each file in a process of its own, at once
-   (tools/test.py; unless --no-tests);
-3. makes the signed RPM in build/rpm/ (packaging/build-rpm.sh --sign,
-   which checks its signature; gpg asks for the passphrase), unless
-   --no-build (then the one in build/rpm/ is used); then signs it
-   (tools/sign_release.py: FILE.asc, build/release/SHA256SUMS and its .asc), and
-   checks each signature with only the public key that is published
+1. comprueba que el repositorio esté en main, sin nada por confirmar, que
+   gh, tea, gpg, rpmbuild y copr-cli estén instalados y que la clave de
+   firma esté en gpg;
+2. corre las pruebas, cada archivo en un proceso propio, a la vez
+   (tools/test.py; salvo con --no-tests);
+3. hace el RPM firmado en build/rpm/ (packaging/build-rpm.sh --sign, que
+   comprueba su firma; gpg pide la frase de contraseña), salvo con
+   --no-build (entonces se usa el que haya en build/rpm/); luego lo firma
+   (tools/sign_release.py: ARCHIVO.asc, build/release/SHA256SUMS y su .asc)
+   y comprueba cada firma solo con la clave pública que se publica
    (packaging/RPM-GPG-KEY-krunner-py-words);
-4. tags HEAD as vVERSION, a tag signed with the same key (git tag --sign),
-   and checks it (git tag --verify).  If the tag is there already on
-   another commit, it stops, unless --redo moves it;
-5. pushes main and the tag to the remote (origin, whose push addresses are
-   GitHub and Codeberg; --redo pushes the tag with --force).  Whether each
-   forge has the tag already is asked of each push address, as the remote
-   may have no address to fetch from;
-6. on each forge, makes the release of the tag, or keeps the one there is,
-   and attaches the files to it, replacing those of the same name;
-7. sends the source RPM to Copr (copr-cli build, project
-   nivaca/krunner-py-words), unless --no-copr.  Copr builds it for each Fedora of
-   the project and signs it with its own key; each build needs a higher
-   version-release than the last, so the spec must have been bumped
-   (rpmdev-bumpspec, see packaging/COPR.org).
+4. pone en HEAD la etiqueta vVERSIÓN, firmada con la misma clave (git tag
+   --sign), y la comprueba (git tag --verify).  Si la etiqueta ya está en
+   otro commit, se detiene, salvo que --redo la mueva;
+5. sube main y la etiqueta al remoto (origin, cuyas direcciones de subida
+   son GitHub y Codeberg; --redo sube la etiqueta con --force).  Si cada
+   forja ya tiene la etiqueta se le pregunta a cada dirección de subida,
+   porque el remoto puede no tener una dirección de la que bajar;
+6. en cada forja, hace la versión de la etiqueta, o conserva la que haya,
+   y le adjunta los archivos, en lugar de los que tengan el mismo nombre;
+7. manda el RPM de código a Copr (copr-cli build, proyecto
+   nivaca/krunner-py-words), salvo con --no-copr.  Copr lo compila para
+   cada Fedora del proyecto y lo firma con su propia clave; cada
+   compilación necesita una versión-revisión mayor que la anterior, así
+   que el spec debe haberse subido antes (rpmdev-bumpspec, véase
+   packaging/COPR.org).
 
-Only the RPM is kept here once the release is done (in build/rpm/, and its
-copy in dist/, which holds nothing else): at the end, build/release/ (where
-SHA256SUMS and its signature are made) and build/zenodo/ are deleted, since
-the forges and Zenodo have what they held.
+Terminada la publicación, aquí solo queda el RPM (en build/rpm/, y su
+copia en dist/, que no tiene nada más): al final se borran build/release/
+(donde se hacen SHA256SUMS y su firma) y build/zenodo/, porque las forjas
+y Zenodo ya tienen lo que contenían.
 
-Before doing anything, it shows the commands it will run and asks; --yes
-does not ask, --dry-run only shows them.  The notes of a new release are
---notes, --notes-file, or else made by GitHub from the commits (on
-Codeberg, none); a release that is there keeps its notes.
+Antes de hacer nada, muestra las órdenes que va a correr y pregunta; con
+--yes no pregunta, y con --dry-run solo las muestra.  Las notas de una
+versión nueva son --notes, --notes-file o, si no, las que hace GitHub con
+los commits (en Codeberg, ninguna); una versión que ya está conserva sus
+notas.
 
-The repositories are found from the push addresses of the remote; tea uses
-the login named codeberg unless --tea-login says another.
+Los repositorios salen de las direcciones de subida del remoto; tea usa
+la sesión llamada codeberg, salvo que --tea-login diga otra.
 
-The deposit for Zenodo is collected in build/zenodo/ after the tag
-(tools/zenodo.py collect: the tree of the tag, signed, with SHA256SUMS and
-the public key), and at the end uploaded to Zenodo and published (the token in
-$ZENODO_TOKEN or the keyring), unless --no-zenodo. It is published there, with a new DOI;
-with --zenodo-draft it is left as a draft, to publish by hand.
+El depósito para Zenodo se reúne en build/zenodo/ después de la etiqueta
+(tools/zenodo.py collect: el árbol de la etiqueta, firmado, con SHA256SUMS
+y la clave pública), y al final se sube a Zenodo y se publica (el token
+está en $ZENODO_TOKEN o en el llavero), salvo con --no-zenodo.  Allí se
+publica con un DOI nuevo; con --zenodo-draft queda como borrador, para
+publicarlo a mano.
 """
 
 import argparse
